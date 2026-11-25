@@ -3,4 +3,3 @@ uploads/usuarios/*
 !uploads/usuarios/index.html
 !uploads/usuarios/.htaccess
 .env
-LEIA-ME.txt

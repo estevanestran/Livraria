@@ -19,8 +19,8 @@ function validarPost(): void {
 $acao=(string)($_GET['acao']??'index');
 // Log de TODAS as requisições ao roteador, sem registrar e-mails, senhas ou tokens.
 Logger::registrar('ROTA', ['rota'=>substr($acao,0,60), 'metodo'=>$_SERVER['REQUEST_METHOD']??'GET']);
-if (in_array($acao,['salvar','deletar','entrar','registrar','sair','enviar_recuperacao','salvar_senha'],true)) validarPost();
-if (in_array($acao,['novo','editar','salvar','deletar'],true)) Auth::exigirAdmin();
+if (in_array($acao,['salvar','deletar','entrar','registrar','sair','enviar_recuperacao','salvar_senha','salvar_categoria','excluir_categoria'],true)) validarPost();
+if (in_array($acao,['novo','editar','salvar','deletar','gerenciar_categorias','salvar_categoria','excluir_categoria'],true)) Auth::exigirAdmin();
 $controller=new LivroController();
 switch ($acao) {
     case 'login':
@@ -73,6 +73,13 @@ switch ($acao) {
         header('Referrer-Policy: no-referrer');
         require __DIR__.'/views/recuperacao.php'; break;
     case 'sair': Auth::sair(); header('Location: index.php'); exit;
+    case 'livro': $controller->detalhe((int)($_GET['id']??0)); break;
+    case 'categorias': $controller->categoriasPublicas(); break;
+    case 'gerenciar_categorias': $controller->gerenciarCategorias(); break;
+    case 'salvar_categoria': $controller->salvarCategoria(); break;
+    case 'excluir_categoria': $controller->excluirCategoria(); break;
+    case 'termos':
+    case 'plagio': $tipo=$acao; require __DIR__.'/views/politica.php'; break;
     case 'novo': $controller->formCriar(); break;
     case 'editar': $controller->formEditar((int)($_GET['id']??0)); break;
     case 'salvar': $controller->salvar(); break;

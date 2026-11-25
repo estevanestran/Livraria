@@ -3,7 +3,51 @@ require_once __DIR__ . '/Livro.php';
 class LivroController {
     private Livro $modelo;
     public function __construct() { $this->modelo=new Livro(); }
-    public function index(): void { $livros=$this->modelo->listarTodos(); require __DIR__.'/views/Listar.php'; }
+    public function index(): void {
+        $busca=mb_substr(trim((string)($_GET['busca']??'')),0,100);
+        $categoriaId=filter_var($_GET['categoria']??0,FILTER_VALIDATE_INT);
+        $categoriaId=$categoriaId!==false&&$categoriaId>0?$categoriaId:0;
+        $categorias=$this->modelo->listarCategorias();
+        $livros=$this->modelo->pesquisar($busca,$categoriaId);
+        require __DIR__.'/views/catalogo.php';
+    }
+    public function detalhe(int $id): void {
+        $livro=$this->modelo->detalhes($id);
+        if (!$livro) {http_response_code(404); echo 'Livro não encontrado.'; return;}
+        require __DIR__.'/views/detalhe.php';
+    }
+    public function categoriasPublicas(): void {
+        $categorias=$this->modelo->categoriasComContagem();
+        require __DIR__.'/views/categorias_publicas.php';
+    }
+    public function gerenciarCategorias(): void {
+        $categorias=$this->modelo->categoriasComContagem();
+        $id=filter_var($_GET['id']??0,FILTER_VALIDATE_INT);
+        $editando=$id>0?$this->modelo->buscarCategoria($id):null;
+        $erro='';
+        require __DIR__.'/views/categorias_admin.php';
+    }
+    public function salvarCategoria(): void {
+        $nome=trim((string)($_POST['nome']??''));
+        $id=filter_var($_POST['id']??0,FILTER_VALIDATE_INT);
+        if (mb_strlen($nome)<2 || mb_strlen($nome)>50) {
+            http_response_code(422); echo 'Nome da categoria deve ter de 2 a 50 caracteres.'; return;
+        }
+        try {
+            $this->modelo->salvarCategoria($nome,$id>0?$id:null);
+            Logger::registrar('CATEGORIA_SALVA',['resultado'=>'sucesso']);
+            header('Location: index.php?acao=gerenciar_categorias'); exit;
+        } catch (PDOException $e) {
+            http_response_code(409); echo 'Não foi possível salvar a categoria. Confira se o nome já existe.'; 
+        }
+    }
+    public function excluirCategoria(): void {
+        $id=filter_var($_POST['id']??0,FILTER_VALIDATE_INT);
+        if (!$id || $id<1) {http_response_code(400); echo 'Categoria inválida.'; return;}
+        $this->modelo->excluirCategoria($id);
+        Logger::registrar('CATEGORIA_EXCLUIDA',['resultado'=>'sucesso']);
+        header('Location: index.php?acao=gerenciar_categorias'); exit;
+    }
     public function formCriar(): void { $livro=null; $categorias=$this->modelo->listarCategorias(); require __DIR__.'/views/form.php'; }
     public function formEditar(int $id): void {
         $livro=$this->modelo->buscarPorId($id); if (!$livro) {http_response_code(404); echo 'Livro não encontrado'; return;}

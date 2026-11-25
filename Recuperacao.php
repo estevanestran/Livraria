@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__.'/conexao.php';
 require_once __DIR__.'/Logger.php';
+require_once __DIR__.'/Email.php';
 final class Recuperacao {
     public static function solicitar(string $email): void {
         $db = Conexao::getConexao();
@@ -24,16 +25,12 @@ final class Recuperacao {
         $link = rtrim($base, '/') . '/index.php?acao=redefinir&token=' . urlencode($token);
         $assunto = 'Recuperacao de senha - Livraria';
         $mensagem = "Solicitou redefinir a senha? Abra este link (valido por 30 minutos):\n".$link."\n\nSe nao foi voce, ignore esta mensagem.";
-        $remetente = getenv('LIVRARIA_EMAIL_REMETENTE');
-        if (!$remetente || !filter_var($remetente,FILTER_VALIDATE_EMAIL)) {
-            $db->prepare('DELETE FROM recuperacao_senha WHERE id=?')->execute([$registroId]);
-            throw new RuntimeException('Configure LIVRARIA_EMAIL_REMETENTE.');
-        }
-        $ok = mail($email, $assunto, $mensagem, 'From: '.$remetente."\r\nContent-Type: text/plain; charset=UTF-8");
-        if (!$ok) {
+        try {
+            Email::enviar($email, $assunto, $mensagem);
+        } catch (Throwable $e) {
             $db->prepare('DELETE FROM recuperacao_senha WHERE id=?')->execute([$registroId]);
             Logger::registrar('RECUPERACAO_SOLICITADA', ['resultado'=>'falha_envio']);
-            throw new RuntimeException('O servidor não conseguiu enviar o e-mail.');
+            throw $e;
         }
         Logger::registrar('RECUPERACAO_SOLICITADA', ['resultado'=>'processada']);
     }

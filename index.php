@@ -8,7 +8,9 @@ session_start();
 require_once __DIR__.'/Auth.php';
 require_once __DIR__.'/Foto.php';
 require_once __DIR__.'/Recuperacao.php';
+require_once __DIR__.'/Contato.php';
 require_once __DIR__.'/LivroController.php';
+require_once __DIR__.'/CarrinhoController.php';
 if (empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(32));
 function validarPost(): void {
     if ($_SERVER['REQUEST_METHOD']!=='POST' || !hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??''))) {
@@ -19,9 +21,13 @@ function validarPost(): void {
 $acao=(string)($_GET['acao']??'index');
 // Log de TODAS as requisições ao roteador, sem registrar e-mails, senhas ou tokens.
 Logger::registrar('ROTA', ['rota'=>substr($acao,0,60), 'metodo'=>$_SERVER['REQUEST_METHOD']??'GET']);
-if (in_array($acao,['salvar','deletar','entrar','registrar','sair','enviar_recuperacao','salvar_senha','salvar_categoria','excluir_categoria'],true)) validarPost();
+if (in_array($acao,['salvar','deletar','entrar','registrar','sair','enviar_recuperacao','salvar_senha','salvar_categoria','excluir_categoria','adicionar_carrinho','atualizar_carrinho','finalizar_pedido','enviar_contato'],true)) validarPost();
 if (in_array($acao,['novo','editar','salvar','deletar','gerenciar_categorias','salvar_categoria','excluir_categoria'],true)) Auth::exigirAdmin();
 $controller=new LivroController();
+$carrinhoController=new CarrinhoController();
+if (in_array($acao,['meus_pedidos','pedido'],true) && !Auth::usuario()) {
+    header('Location: index.php?acao=login'); exit;
+}
 switch ($acao) {
     case 'login':
     case 'cadastro':
@@ -49,6 +55,44 @@ switch ($acao) {
             }
         }
         require __DIR__.'/views/auth.php'; break;
+    case 'contato':
+        $erro=''; $sucesso=''; $dados=[];
+        require __DIR__.'/views/contato.php'; break;
+    case 'enviar_contato':
+        // Para usuários autenticados, nome e e-mail vêm da sessão, nunca do POST.
+        $usuarioContato=Auth::usuario();
+        $dados=[
+            'nome'=>$usuarioContato ? (string)$usuarioContato['nome'] : trim((string)($_POST['nome']??'')),
+            'email'=>$usuarioContato ? (string)$usuarioContato['email'] : trim((string)($_POST['email']??'')),
+            'assunto'=>trim((string)($_POST['assunto']??'')),
+            'mensagem'=>trim((string)($_POST['mensagem']??'')),
+        ];
+        $erro=''; $sucesso='';
+        if (mb_strlen($dados['nome'])<2 || mb_strlen($dados['nome'])>150 ||
+            !filter_var($dados['email'],FILTER_VALIDATE_EMAIL) || strlen($dados['email'])>190 ||
+            mb_strlen($dados['assunto'])<3 || mb_strlen($dados['assunto'])>150 ||
+            mb_strlen($dados['mensagem'])<10 || mb_strlen($dados['mensagem'])>5000) {
+            $erro='Confira os campos: nome (2 a 150), e-mail válido, assunto (3 a 150) e mensagem (10 a 5000 caracteres).';
+            http_response_code(422);
+        } else {
+            try {
+                $id=Contato::registrar($dados['nome'],$dados['email'],$dados['assunto'],$dados['mensagem']);
+                try {
+                    Contato::enviar($id,$dados['nome'],$dados['email'],$dados['assunto'],$dados['mensagem']);
+                    $sucesso='Mensagem registrada e enviada com sucesso.';
+                } catch (Throwable $e) {
+                    Logger::registrar('CONTATO_ENVIADO',['resultado'=>'falha']);
+                    $erro='Sua mensagem foi registrada, mas não foi possível enviá-la por e-mail. Verifique a configuração SMTP.';
+                    http_response_code(503);
+                }
+                $dados=[];
+            } catch (Throwable $e) {
+                Logger::registrar('CONTATO_RECEBIDO',['resultado'=>'falha']);
+                $erro='Não foi possível registrar sua mensagem. Tente novamente.';
+                http_response_code(500);
+            }
+        }
+        require __DIR__.'/views/contato.php'; break;
     case 'esqueci':
         $modo='solicitar'; $mensagem=''; require __DIR__.'/views/recuperacao.php'; break;
     case 'enviar_recuperacao':
@@ -73,6 +117,12 @@ switch ($acao) {
         header('Referrer-Policy: no-referrer');
         require __DIR__.'/views/recuperacao.php'; break;
     case 'sair': Auth::sair(); header('Location: index.php'); exit;
+    case 'carrinho': $carrinhoController->mostrar(); break;
+    case 'adicionar_carrinho': $carrinhoController->adicionar(); break;
+    case 'atualizar_carrinho': $carrinhoController->atualizar(); break;
+    case 'finalizar_pedido': $carrinhoController->finalizar(); break;
+    case 'meus_pedidos': $carrinhoController->historico(); break;
+    case 'pedido': $carrinhoController->pedido((int)($_GET['id']??0)); break;
     case 'livro': $controller->detalhe((int)($_GET['id']??0)); break;
     case 'categorias': $controller->categoriasPublicas(); break;
     case 'gerenciar_categorias': $controller->gerenciarCategorias(); break;

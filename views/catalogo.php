@@ -7,7 +7,10 @@ require __DIR__.'/head.php';
 <h1>Livraria Virtual</h1>
 <nav class="d-flex flex-wrap gap-2 align-items-center">
 <a href="index.php" class="btn btn-outline-primary">Todos os livros</a>
+<a href="index.php?acao=contato" class="btn btn-outline-primary">Fale Conosco</a>
 <a href="index.php?acao=categorias" class="btn btn-outline-primary">Por categoria</a>
+<a href="index.php?acao=carrinho" class="btn btn-outline-primary">Carrinho (<?= array_sum(CarrinhoController::itens()) ?>)</a>
+<?php if (Auth::usuario()): ?><a href="index.php?acao=meus_pedidos" class="btn btn-outline-primary">Meus pedidos</a><?php endif; ?>
 <?php if (Auth::admin()): ?>
 <a href="index.php?acao=novo" class="btn btn-success">Novo livro</a>
 <a href="index.php?acao=gerenciar_categorias" class="btn btn-outline-dark">Gerenciar categorias</a>
@@ -38,6 +41,9 @@ require __DIR__.'/head.php';
 <p class="small"><?= $esc($l['categorias_nomes']??'Sem categoria') ?></p>
 <p class="fw-bold">R$ <?= number_format((float)$l['preco'],2,',','.') ?></p>
 <a class="btn btn-primary mt-auto" href="index.php?acao=livro&id=<?= (int)$l['id'] ?>">Ver detalhes</a>
+<?php if ($l['status']==='Disponível' && (int)$l['estoque']>0): ?>
+<form method="post" action="index.php?acao=adicionar_carrinho" class="mt-2"><input type="hidden" name="csrf" value="<?= $esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$l['id'] ?>"><button class="btn btn-outline-success w-100">Adicionar ao carrinho</button></form>
+<?php endif; ?>
 <?php if (Auth::admin()): ?><a class="btn btn-outline-secondary mt-2" href="index.php?acao=editar&id=<?= (int)$l['id'] ?>">Editar</a>
 <form class="mt-2" method="post" action="index.php?acao=deletar" onsubmit="return confirm('Excluir livro?')"><input type="hidden" name="csrf" value="<?= $esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$l['id'] ?>"><button class="btn btn-outline-danger w-100">Excluir</button></form><?php endif; ?>
 </div></article></div>

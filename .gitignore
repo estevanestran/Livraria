@@ -3,3 +3,5 @@ uploads/usuarios/*
 !uploads/usuarios/index.html
 !uploads/usuarios/.htaccess
 .env
+/config/email.local.php
+/vendor/

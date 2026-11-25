@@ -12,6 +12,12 @@ require __DIR__.'/head.php'; ?>
 <p><strong>Estoque:</strong> <?= (int)$livro['estoque'] ?></p>
 <p><strong>Status:</strong> <?= $esc($livro['status']) ?></p>
 <h2 class="h4">Descrição</h2><p><?= nl2br($esc($livro['descricao']??'')) ?></p>
-<p class="text-secondary">O carrinho de compras será implementado na próxima etapa.</p>
+<?php if ($livro['status']==='Disponível' && (int)$livro['estoque']>0): ?>
+<form method="post" action="index.php?acao=adicionar_carrinho" class="d-flex gap-2 align-items-end flex-wrap">
+<input type="hidden" name="csrf" value="<?= $esc($_SESSION['csrf']) ?>"><input type="hidden" name="id" value="<?= (int)$livro['id'] ?>">
+<div><label class="form-label" for="quantidade">Quantidade</label><input class="form-control" id="quantidade" type="number" name="quantidade" value="1" min="1" max="<?= min(99,(int)$livro['estoque']) ?>" required></div>
+<button class="btn btn-success">Adicionar ao carrinho</button></form>
+<?php else: ?><p class="text-danger">Livro indisponível para compra.</p><?php endif; ?>
+<a class="btn btn-outline-primary mt-3" href="index.php?acao=carrinho">Ver carrinho</a>
 </div></main>
 <?php require __DIR__.'/footer.php'; ?>

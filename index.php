@@ -11,6 +11,7 @@ require_once __DIR__.'/Recuperacao.php';
 require_once __DIR__.'/Contato.php';
 require_once __DIR__.'/LivroController.php';
 require_once __DIR__.'/CarrinhoController.php';
+require_once __DIR__.'/Recomendacoes.php';
 if (empty($_SESSION['csrf'])) $_SESSION['csrf']=bin2hex(random_bytes(32));
 function validarPost(): void {
     if ($_SERVER['REQUEST_METHOD']!=='POST' || !hash_equals($_SESSION['csrf'],(string)($_POST['csrf']??''))) {
@@ -55,6 +56,8 @@ switch ($acao) {
             }
         }
         require __DIR__.'/views/auth.php'; break;
+    case 'api_recomendacoes': Recomendacoes::responder(); break;
+    case 'recomendacoes': require __DIR__.'/views/recomendacoes.php'; break;
     case 'contato':
         $erro=''; $sucesso=''; $dados=[];
         require __DIR__.'/views/contato.php'; break;

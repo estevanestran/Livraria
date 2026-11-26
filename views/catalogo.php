@@ -7,6 +7,7 @@ require __DIR__.'/head.php';
 <h1>Livraria Virtual</h1>
 <nav class="d-flex flex-wrap gap-2 align-items-center">
 <a href="index.php" class="btn btn-outline-primary">Todos os livros</a>
+<a href="index.php?acao=recomendacoes" class="btn btn-outline-primary">Recomendações com IA</a>
 <a href="index.php?acao=contato" class="btn btn-outline-primary">Fale Conosco</a>
 <a href="index.php?acao=categorias" class="btn btn-outline-primary">Por categoria</a>
 <a href="index.php?acao=carrinho" class="btn btn-outline-primary">Carrinho (<?= array_sum(CarrinhoController::itens()) ?>)</a>

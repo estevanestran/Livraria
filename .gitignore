@@ -5,3 +5,5 @@ uploads/usuarios/*
 .env
 /config/email.local.php
 /vendor/
+/config/ia.local.php
+/react/node_modules/

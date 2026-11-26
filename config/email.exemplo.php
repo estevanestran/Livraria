@@ -1,6 +1,6 @@
 <?php
 return [
-    'usuario' => 'livraria@gmail.com',
-    'senha_app' => 'SUA_SENHA_DE_APLICATIVO',
-    'destinatario_contato' => 'livraria@gmail.com',
+    'usuario' => 'seu-email@gmail.com',
+    'senha_app' => 'SENHA_DE_APLICATIVO_DO_GOOGLE',
+    'destinatario_contato' => 'seu-email@gmail.com',
 ];

@@ -5,8 +5,7 @@ Aplicação web de livraria desenvolvida como projeto acadêmico para a discipli
 ## Acesso à aplicação
 
 - **Sistema publicado:** https://livrariadevwebpa1.websiteseguro.com
-- **E-mail administrador:** emailadmin@livraria.host
-- **Senha administrador:** 1Senha3Admin*
+- **GitHub:** https://github.com/estevanestran/Livraria
 
 ## Funcionalidades
 

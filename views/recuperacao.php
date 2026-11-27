@@ -1,7 +1,36 @@
-<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Recuperação de senha - Livraria</title><link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"></head><body class="container py-5"><main class="mx-auto" style="max-width:480px"><h1><?= $modo==='solicitar'?'Esqueci minha senha':'Redefinir senha' ?></h1><p><a href="index.php?acao=login">Voltar ao login</a></p>
-<?php if (!empty($mensagem)): ?><div class="alert alert-info"><?= htmlspecialchars($mensagem,ENT_QUOTES,'UTF-8') ?></div><?php endif; ?>
-<?php if ($modo==='solicitar'): ?>
-<form method="post" action="index.php?acao=enviar_recuperacao"><input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'],ENT_QUOTES,'UTF-8') ?>"><label class="form-label" for="email">E-mail da conta</label><input class="form-control mb-3" id="email" type="email" name="email" maxlength="190" required><button class="btn btn-primary">Solicitar link</button></form>
-<?php else: ?>
-<form method="post" action="index.php?acao=salvar_senha"><input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'],ENT_QUOTES,'UTF-8') ?>"><input type="hidden" name="token" value="<?= htmlspecialchars($token??'',ENT_QUOTES,'UTF-8') ?>"><label class="form-label" for="senha">Nova senha</label><input class="form-control mb-3" id="senha" type="password" name="senha" minlength="8" required><label class="form-label" for="confirmacao">Confirme a nova senha</label><input class="form-control mb-3" id="confirmacao" type="password" name="confirmacao" minlength="8" required><button class="btn btn-primary">Salvar nova senha</button></form>
-<?php endif; ?></main></body></html>
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>Recuperação de senha - Livraria</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container py-5">
+    <main class="mx-auto" style="max-width:480px">
+        <h1><?= $modo==='solicitar'?'Esqueci minha senha':'Redefinir senha' ?></h1>
+        <p><a href="index.php?acao=login">Voltar ao login</a></p>
+        <?php if (!empty($mensagem)): ?>
+            <div class="alert alert-info"><?= htmlspecialchars($mensagem,ENT_QUOTES,'UTF-8') ?></div>
+        <?php endif; ?>
+        <?php if ($modo==='solicitar'): ?>
+            <form method="post" action="index.php?acao=enviar_recuperacao">
+                <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'],ENT_QUOTES,'UTF-8') ?>">
+                <label class="form-label" for="email">E-mail da conta</label>
+                <input class="form-control mb-3" id="email" type="email" name="email" maxlength="190" required>
+                <button class="btn btn-primary">Solicitar link</button>
+            </form>
+        <?php else: ?>
+            <form method="post" action="index.php?acao=salvar_senha">
+                <input type="hidden" name="csrf" value="<?= htmlspecialchars($_SESSION['csrf'],ENT_QUOTES,'UTF-8') ?>">
+                <input type="hidden" name="token" value="<?= htmlspecialchars($token??'',ENT_QUOTES,'UTF-8') ?>">
+                <label class="form-label" for="senha">Nova senha</label>
+                <input class="form-control mb-3" id="senha" type="password" name="senha" minlength="8" required>
+                <label class="form-label" for="confirmacao">Confirme a nova senha</label>
+                <input class="form-control mb-3" id="confirmacao" type="password" name="confirmacao" minlength="8" required>
+                <button class="btn btn-primary">Salvar nova senha</button>
+            </form>
+        <?php endif; ?>
+    </main>
+</body>
+</html>
